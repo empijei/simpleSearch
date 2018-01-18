@@ -1,6 +1,10 @@
 package main
 
-import "log"
+import (
+	"log"
+
+	"github.com/empijei/wapty/cli/lg"
+)
 
 func main() {
 	err := Load("data", Paragraphs)
@@ -11,4 +15,10 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
+	go func() {
+		for m := range searchChannel {
+			lg.Debug(m)
+		}
+	}()
+	View()
 }

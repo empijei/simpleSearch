@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.3/slate/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <form>
+    <div class="form-group">
+      <label for="usr">Search:</label>
+      <input type="text" class="form-control" id="input-search">
+    </div>
+  </form>
+<div class="list-group" id="result-list">
+</div>
+ </div>
+ <script>
+	 /**/
+//Disable enter to submit
+$(document).ready(function() {
+  $('form input').keydown(function(event){
+    if(event.keyCode == 13) {
+      event.preventDefault();
+      return false;
+    }
+  });
+});
+
+var searchbar = document.getElementById("input-search");
+searchbar.focus()
+
+//Actual application logic
+var ws = new WebSocket("ws://localhost:42137/ws");
+var reslist = document.getElementById("result-list");
+function updateSearch(event){
+	var msg = { "search" : event };
+	console.log(msg);
+	ws.send(JSON.stringify(msg));
+};
+ws.onopen = function (event) {
+	console.log("Connected to backend")
+	searchbar.addEventListener("change", updateSearch);
+	console.log("Enabled search")
+};
+ws.onmessage = function (event) {
+	console.log(event.data);
+	var msg = JSON.parse(event.data);
+	reslist.innerHTML = msg.Html;
+};
+ </script>
+</body>
+</html>
