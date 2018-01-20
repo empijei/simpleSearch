@@ -48,3 +48,7 @@ func LoadParagraph(r io.Reader) (p *Paragraph, err error) {
 	p.BodyIta = string(itabuf.Bytes())
 	return p, nil
 }
+
+func (p *Paragraph) GetAllText() string {
+	return p.Title + p.BodyIta + p.BodyEng
+}

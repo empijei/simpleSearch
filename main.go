@@ -18,6 +18,11 @@ func main() {
 	go func() {
 		for m := range searchChannel {
 			lg.Debug(m)
+			p, err := Paragraphs.Search(m)
+			if err != nil {
+				continue
+			}
+			resultChannel <- p
 		}
 	}()
 	View()

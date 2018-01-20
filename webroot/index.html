@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title>Simple Search</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.3/slate/bootstrap.min.css">
@@ -39,13 +39,13 @@ searchbar.focus()
 var ws = new WebSocket("ws://localhost:42137/ws");
 var reslist = document.getElementById("result-list");
 function updateSearch(event){
-	var msg = { "search" : event };
+	var msg = { "search" : searchbar.value };
 	console.log(msg);
 	ws.send(JSON.stringify(msg));
 };
 ws.onopen = function (event) {
 	console.log("Connected to backend")
-	searchbar.addEventListener("change", updateSearch);
+	searchbar.addEventListener("input", updateSearch);
 	console.log("Enabled search")
 };
 ws.onmessage = function (event) {
