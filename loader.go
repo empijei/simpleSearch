@@ -6,27 +6,47 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/empijei/wapty/cli/lg"
 )
 
-func Load(path string, where Searcher) error {
+//TODO make this a vararg of wheres and add support for streamers
+func Load(path string, where ...Searcher) error {
+	lg.Info("Recomputing indexes...")
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return err
 	}
-
+	for _, w := range where {
+		if w, ok := w.(StreamSearcher); ok {
+			w.Open()
+		}
+	}
+	t := time.Now()
+	i := 0
 	for _, file := range files {
 		if strings.HasSuffix(file.Name(), ".md") {
 			f, err := os.Open(filepath.Join(path, file.Name()))
 			if err != nil {
 				return err
 			}
+			i++
 			p, err := LoadParagraph(f)
 			if err != nil {
 				return err
 			}
-			where.Add(p)
+			for _, w := range where {
+				w.Add(p)
+			}
 		}
 	}
+	for _, w := range where {
+		if w, ok := w.(StreamSearcher); ok {
+			w.Close()
+		}
+	}
+	lg.Infof("Indexes updated, %d files added in %d millisenconds", i, time.Now().Sub(t).Nanoseconds()/1000000)
 	return nil
 }
 

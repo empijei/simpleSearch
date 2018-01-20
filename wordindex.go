@@ -9,17 +9,22 @@ import (
 )
 
 type wordIndex struct {
-	index map[string]ParSet
+	index map[string]*ParSet
 }
 
-func (w *wordIndex) lookup(needle string) ParSet {
-	return w.index[needle]
+func (w *wordIndex) lookup(needle string) *ParSet {
+	return w.index[strings.ToLower(needle)]
 }
 
 //This is thread-unsafe, it expects the caller to perform checks
 func (wi *wordIndex) addToIndex(c <-chan *Paragraph) {
+	wi.index = make(map[string]*ParSet)
 	for p := range c {
-		for w := range getWordsStream(p.GetAllText()) {
+		for w := range getWordsStream(strings.ToLower(p.GetAllText())) {
+			lg.Debugf("Inserting <%v> into index", w)
+			if wi.index[w] == nil {
+				wi.index[w] = &ParSet{}
+			}
 			wi.index[w].Add(p)
 		}
 	}
@@ -50,23 +55,30 @@ func getWords(words string) (splitted []string) {
 type FastSearcher struct {
 	sync.Mutex
 
-	index wordIndex
+	Index *wordIndex
+
+	done  chan struct{}
 	learn chan *Paragraph
 }
 
 func (fs *FastSearcher) Search(needle string) ([]*Paragraph, error) {
+	lg.Debug("Searching for: ", needle)
 	words := getWords(needle)
 	if len(words) == 0 {
 		return nil, nil
 	}
-	set := fs.index.lookup(words[0])
-	for i := 1; i < len(words); i++ {
-		set = set.Intersection(fs.index.lookup(words[i]))
+	set := fs.Index.lookup(words[0])
+	if set == nil {
+		return nil, nil
 	}
-	return set.GetSlice(), nil
+	for i := 1; i < len(words); i++ {
+		set = set.Intersection(*fs.Index.lookup(words[i]))
+	}
+	return set.GetCroppedSlice(10), nil
 }
 
 func (fs *FastSearcher) Add(p *Paragraph) {
+	lg.Debug("Adding paragraph ", p.Title)
 	fs.Lock()
 	defer func() {
 		fs.Unlock()
@@ -75,25 +87,34 @@ func (fs *FastSearcher) Add(p *Paragraph) {
 		}
 	}()
 	if fs.learn == nil {
+		lg.Error("Adding not in learn mode")
 		return
 	}
 	fs.learn <- p
 }
 
 func (fs *FastSearcher) Open() {
+	lg.Debug("Started learning")
 	fs.Lock()
 	defer fs.Unlock()
 	if fs.learn == nil {
 		fs.learn = make(chan *Paragraph)
+		fs.done = make(chan struct{})
 	}
 	go func() {
-		fs.index.addToIndex(fs.learn)
+		fs.Index = &wordIndex{}
+		fs.Index.addToIndex(fs.learn)
 		fs.Lock()
 		fs.learn = nil
 		fs.Unlock()
+		lg.Debug("Learning phase closed")
+		fs.done <- struct{}{}
 	}()
 }
 
 func (fs *FastSearcher) Close() {
+	lg.Debug("Closing learning phase")
 	close(fs.learn)
+	<-fs.done
+	lg.Debug("Learnt: ", *fs.Index)
 }

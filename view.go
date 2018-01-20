@@ -33,6 +33,7 @@ func View() {
 	}
 	pentrytmpl = template.Must(template.New("entry").Parse(entrytmpl))
 	http.Handle("/ws", websocket.Handler(onConnected))
+	lg.Info("Starting web interface")
 	_ = http.ListenAndServe("127.0.0.1:42137", nil)
 }
 
