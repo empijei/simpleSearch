@@ -14,7 +14,7 @@ import (
 var reg *regexp.Regexp
 
 func openToWrite(dir, title string) (io.WriteCloser, error) {
-	filename := filepath.Join(dir, reg.ReplaceAllString(strings.Replace(strings.ToLower(title[2:]), " ", "_", -1), "")) + ".md"
+	filename := filepath.Join(dir, reg.ReplaceAllString(strings.Replace(strings.TrimSpace(strings.ToLower(title[2:])), " ", "_", -1), "")) + ".md"
 	_ = os.Remove(filename)
 	f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0666)
 	return f, err

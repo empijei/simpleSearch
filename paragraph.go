@@ -42,6 +42,9 @@ func LoadParagraph(r io.Reader) (p *Paragraph, err error) {
 					lg.Error("Unknown meta: " + line)
 				}
 			}
+			if !strings.HasPrefix(line, "## ") {
+				continue
+			}
 		}
 		if strings.HasPrefix(line, "## E") {
 			isIta = false

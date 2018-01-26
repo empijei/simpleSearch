@@ -17,10 +17,13 @@ const entrytmpl = ` {{ range . }}
       <h5 class="mb-1">{{.Title}}</h5>
 		<small>{{.Classification}}</small>
     </div>
-    <p class="mb-1">{{.BodyEng}}</p>
-	 <br>
-    <p class="mb-1">{{.BodyIta}}</p>
-	 <small>{{.Activity}}</small>
+    <p class="mb-1 eng">
+	 {{.BodyEng}}
+	 </p>
+    <p class="mb-1 ita">
+	 {{.BodyIta}}
+	 </p>
+	 <small>{{.Activity}} {{.Score}}</small>
   </a>
 {{end}}`
 

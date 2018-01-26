@@ -23,12 +23,12 @@ func main() {
 		for m := range searchChannel {
 			lg.Debug(m)
 			t := time.Now()
-			p, err := Paragraphs.Search(m)
-			//p, err := FastIndex.Search(m)
+			//p, err := Paragraphs.Search(m)
+			p, err := FastIndex.Search(m)
 			if err != nil {
 				continue
 			}
-			lg.Infof("Lookup time: %d ms", time.Now().Sub(t).Nanoseconds()/1000000)
+			lg.Infof("Lookup time: %d µs", time.Now().Sub(t).Nanoseconds()/1000)
 			resultChannel <- p
 		}
 	}()

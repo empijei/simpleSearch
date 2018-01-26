@@ -9,6 +9,7 @@ import (
 )
 
 const MaxResultSize = 10
+const MinSearchLength = 3
 
 type wordIndex struct {
 	index map[string]*ParSet
@@ -23,13 +24,28 @@ func (wi *wordIndex) addToIndex(c <-chan *Paragraph) {
 	wi.index = make(map[string]*ParSet)
 	for p := range c {
 		for w := range getWordsStream(strings.ToLower(p.GetAllText())) {
-			lg.Debugf("Inserting <%v> into index", w)
-			if wi.index[w] == nil {
-				wi.index[w] = &ParSet{}
+			//lg.Debugf("Inserting <%v> into index", w)
+			for _, sw := range getSubWords(w) {
+				if wi.index[sw] == nil {
+					wi.index[sw] = &ParSet{}
+				}
+				wi.index[sw].Add(p)
 			}
-			wi.index[w].Add(p)
+
 		}
 	}
+}
+
+func getSubWords(word string) (subwords []string) {
+	if len(word) < MinSearchLength {
+		return
+	}
+	for size := MinSearchLength; size <= len(word); size++ {
+		for lower := 0; lower <= len(word)-size; lower++ {
+			subwords = append(subwords, word[lower:lower+size])
+		}
+	}
+	return
 }
 
 func getWordsStream(words string) <-chan string {
@@ -64,7 +80,7 @@ type FastSearcher struct {
 }
 
 func (fs *FastSearcher) Search(needle string) ([]*Paragraph, error) {
-	lg.Debug("Searching for: ", needle)
+	//lg.Debug("Searching for: ", needle)
 	words := getWords(needle)
 	if len(words) == 0 {
 		return nil, nil
@@ -83,7 +99,7 @@ func (fs *FastSearcher) Search(needle string) ([]*Paragraph, error) {
 }
 
 func (fs *FastSearcher) Add(p *Paragraph) {
-	lg.Debug("Adding paragraph ", p.Title)
+	//lg.Debug("Adding paragraph ", p.Title)
 	fs.Lock()
 	defer func() {
 		fs.Unlock()
@@ -99,7 +115,7 @@ func (fs *FastSearcher) Add(p *Paragraph) {
 }
 
 func (fs *FastSearcher) Open() {
-	lg.Debug("Started learning")
+	//lg.Debug("Started learning")
 	fs.Lock()
 	defer fs.Unlock()
 	if fs.learn == nil {
@@ -112,14 +128,14 @@ func (fs *FastSearcher) Open() {
 		fs.Lock()
 		fs.learn = nil
 		fs.Unlock()
-		lg.Debug("Learning phase closed")
+		//lg.Debug("Learning phase closed")
 		fs.done <- struct{}{}
 	}()
 }
 
 func (fs *FastSearcher) Close() {
-	lg.Debug("Closing learning phase")
+	//lg.Debug("Closing learning phase")
 	close(fs.learn)
 	<-fs.done
-	lg.Debug("Learnt: ", *fs.Index)
+	//lg.Debug("Learnt: ", *fs.Index)
 }

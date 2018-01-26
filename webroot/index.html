@@ -52,13 +52,20 @@
 			to {bottom: 0; opacity: 0;}
 		}
 	</style>
+
 	<body>
 
 		<div class="container">
 			<form>
-				<div class="form-group">
-					<label for="usr">Search:</label>
-					<input type="text" class="form-control" id="input-search">
+				<div class="col-lg-12">
+					<div class="row">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Search for..." id="input-search">
+							<span class="input-group-btn">
+								<button class="btn btn-secondary" type="button" onclick="toggleLang()" id="langbtn">ENG</button>
+							</span>
+						</div>
+					</div>
 				</div>
 			</form>
 			<div class="list-group" id="result-list">
@@ -90,26 +97,32 @@ function copyTextToClipboard(text) {
 	try {
 		var successful = document.execCommand('copy');
 		if (successful){
-			//console.log('Copying text command was: ' + text);
 			snack("Copied to clipboard", 1000);
 		}else{
-			console.log('Oops, unable to copy');
 			snack("There was an error copying.",6000);
 		}
 	} catch (err) {
 		snack("There was an error copying " + err,6000);
-		console.log('Oops, unable to copy ' + err);
 	}
 	textArea.style.display = "none";
 }
 
 //Handle click to copy
 function listclick(event){
-	copyTextToClipboard(event.target.childNodes[0].data);
+	var elm = event.target.parentElement.getElementsByClassName(ita?"ita":"eng");
+	copyTextToClipboard(elm[0].textContent);
 	searchbar.value = "";
 	emptySearch();
 	searchbar.focus();
 	return false;
+}
+
+//Langsiwtch
+var langbtn = document.getElementById("langbtn");
+var ita = false;
+function toggleLang(){
+	ita = !ita;
+	langbtn.innerText = ita?"ITA":"ENG";
 }
 
 //Snackbar
@@ -130,7 +143,6 @@ var ws = new WebSocket("ws://localhost:42137/ws");
 var reslist = document.getElementById("result-list");
 function updateSearch(event){
 	var msg = { "search" : searchbar.value };
-	//console.log(msg);
 	ws.send(JSON.stringify(msg));
 };
 ws.onopen = function (event) {
@@ -139,14 +151,12 @@ ws.onopen = function (event) {
 	console.log("Enabled search")
 };
 ws.onmessage = function (event) {
-	//console.log(event.data);
 	var msg = JSON.parse(event.data);
 	reslist.innerHTML = msg.Html;
 };
 
-function emptySearch(){
-	reslist.innerHTML = "";
-}
+function emptySearch(){ reslist.innerHTML = ""; }
+
 		</script>
 	</body>
 </html>
