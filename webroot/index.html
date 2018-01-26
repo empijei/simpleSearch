@@ -77,10 +77,12 @@
 		<script>
 			/**/
 
-//Disable enter to submit
+//Disable enter to submit and add to clipboard instead
 $(document).ready(function() {
 	$('form input').keydown(function(event){
 		if(event.keyCode == 13) {
+			var results = document.getElementsByClassName("list-group-item");
+			listclick({target:results[0].children[0]});
 			event.preventDefault();
 			return false;
 		}
@@ -135,10 +137,9 @@ function snack(text,time){
 	}, time);
 }
 
+//Search logic
 var searchbar = document.getElementById("input-search");
 searchbar.focus()
-
-//Actual application logic
 var ws = new WebSocket("ws://localhost:42137/ws");
 var reslist = document.getElementById("result-list");
 function updateSearch(event){
@@ -154,9 +155,7 @@ ws.onmessage = function (event) {
 	var msg = JSON.parse(event.data);
 	reslist.innerHTML = msg.Html;
 };
-
 function emptySearch(){ reslist.innerHTML = ""; }
-
 		</script>
 	</body>
 </html>

@@ -65,7 +65,9 @@ func getWords(words string) (splitted []string) {
 	s := bufio.NewScanner(strings.NewReader(words))
 	s.Split(bufio.ScanWords)
 	for s.Scan() {
-		splitted = append(splitted, s.Text())
+		if len(s.Text()) >= MinSearchLength {
+			splitted = append(splitted, s.Text())
+		}
 	}
 	return
 }
