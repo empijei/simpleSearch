@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/empijei/wapty/cli/lg"
+	"github.com/empijei/cli/lg"
 )
 
 var FastIndex = &FastSearcher{}
@@ -22,9 +22,9 @@ func main() {
 	go func() {
 		for m := range searchChannel {
 			lg.Debug(m)
-			//p, err := Paragraphs.Search(m)
 			t := time.Now()
-			p, err := FastIndex.Search(m)
+			p, err := Paragraphs.Search(m)
+			//p, err := FastIndex.Search(m)
 			if err != nil {
 				continue
 			}

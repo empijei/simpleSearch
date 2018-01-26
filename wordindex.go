@@ -5,8 +5,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/empijei/wapty/cli/lg"
+	"github.com/empijei/cli/lg"
 )
+
+const MaxResultSize = 10
 
 type wordIndex struct {
 	index map[string]*ParSet
@@ -68,13 +70,16 @@ func (fs *FastSearcher) Search(needle string) ([]*Paragraph, error) {
 		return nil, nil
 	}
 	set := fs.Index.lookup(words[0])
+	for i := 1; i < len(words); i++ {
+		if set == nil {
+			return nil, nil
+		}
+		set = set.Intersection(fs.Index.lookup(words[i]))
+	}
 	if set == nil {
 		return nil, nil
 	}
-	for i := 1; i < len(words); i++ {
-		set = set.Intersection(*fs.Index.lookup(words[i]))
-	}
-	return set.GetCroppedSlice(10), nil
+	return set.GetCroppedSlice(MaxResultSize), nil
 }
 
 func (fs *FastSearcher) Add(p *Paragraph) {

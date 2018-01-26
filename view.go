@@ -7,19 +7,20 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/empijei/wapty/cli/lg"
+	"github.com/empijei/cli/lg"
 	"golang.org/x/net/websocket"
 )
 
 const entrytmpl = ` {{ range . }}
-  <a href="#" class="list-group-item list-group-item-action flex-column align-items-start active">
+  <a href="#" class="list-group-item list-group-item-action flex-column align-items-start active" onclick="listclick(event);">
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">{{.Title}}</h5>
-		<small>TODO: OWASP cathegory</small>
+		<small>{{.Classification}}</small>
     </div>
     <p class="mb-1">{{.BodyEng}}</p>
+	 <br>
     <p class="mb-1">{{.BodyIta}}</p>
-	 <small>TODO: activty type</small>
+	 <small>{{.Activity}}</small>
   </a>
 {{end}}`
 

@@ -11,13 +11,13 @@ func (ps *ParSet) Add(p *Paragraph) {
 	ps.s[p] = struct{}{}
 }
 
-func (ps ParSet) GetSlice() (slice []*Paragraph) {
+func (ps *ParSet) GetSlice() (slice []*Paragraph) {
 	for p := range ps.s {
 		slice = append(slice, p)
 	}
 	return
 }
-func (ps ParSet) GetCroppedSlice(count int) (slice []*Paragraph) {
+func (ps *ParSet) GetCroppedSlice(count int) (slice []*Paragraph) {
 	i := 0
 	for p := range ps.s {
 		slice = append(slice, p)
@@ -29,7 +29,10 @@ func (ps ParSet) GetCroppedSlice(count int) (slice []*Paragraph) {
 	return
 }
 
-func (ps1 ParSet) Intersection(ps2 ParSet) (i *ParSet) {
+func (ps1 *ParSet) Intersection(ps2 *ParSet) (i *ParSet) {
+	if ps2 == nil {
+		return nil
+	}
 	if len(ps2.s) < len(ps1.s) {
 		ps2, ps1 = ps1, ps2
 	}

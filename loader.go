@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/empijei/wapty/cli/lg"
+	"github.com/empijei/cli/lg"
 )
 
 //TODO make this a vararg of wheres and add support for streamers

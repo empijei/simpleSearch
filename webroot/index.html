@@ -1,36 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>Simple Search</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/libs/bootstrap.min.css">
-  <script src="/libs/jquery.min.js"></script>
-  <script src="/libs/bootstrap.min.js"></script>
-</head>
-<body>
+	<head>
+		<title>Simple Search</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/libs/bootstrap.min.css">
+		<script src="/libs/jquery.min.js"></script>
+		<script src="/libs/bootstrap.min.js"></script>
+	</head>
+	<!--Snackbar style-->
+	<style>
+		#snackbar {
+			visibility: hidden;
+			min-width: 250px;
+			margin-left: -125px;
+			background-color: #333;
+			color: #fff;
+			text-align: center;
+			border-radius: 2px;
+			padding: 16px;
+			position: fixed;
+			z-index: 1;
+			left: 50%;
+			bottom: 30px;
+			font-size: 17px;
+		}
 
-<div class="container">
-  <form>
-    <div class="form-group">
-      <label for="usr">Search:</label>
-      <input type="text" class="form-control" id="input-search">
-    </div>
-  </form>
-<div class="list-group" id="result-list">
-</div>
- </div>
- <script>
-	 /**/
+		#snackbar.show {
+			visibility: visible;
+			-webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+			animation: fadein 0.5s, fadeout 0.5s 2.5s;
+		}
+
+		@-webkit-keyframes fadein {
+			from {bottom: 0; opacity: 0;} 
+			to {bottom: 30px; opacity: 1;}
+		}
+
+		@keyframes fadein {
+			from {bottom: 0; opacity: 0;}
+			to {bottom: 30px; opacity: 1;}
+		}
+
+		@-webkit-keyframes fadeout {
+			from {bottom: 30px; opacity: 1;} 
+			to {bottom: 0; opacity: 0;}
+		}
+
+		@keyframes fadeout {
+			from {bottom: 30px; opacity: 1;}
+			to {bottom: 0; opacity: 0;}
+		}
+	</style>
+	<body>
+
+		<div class="container">
+			<form>
+				<div class="form-group">
+					<label for="usr">Search:</label>
+					<input type="text" class="form-control" id="input-search">
+				</div>
+			</form>
+			<div class="list-group" id="result-list">
+			</div>
+		</div>
+
+		<div id="snackbar"></div>
+		<textarea id="copyer" style="display:none;"> </textarea>
+		<script>
+			/**/
+
 //Disable enter to submit
 $(document).ready(function() {
-  $('form input').keydown(function(event){
-    if(event.keyCode == 13) {
-      event.preventDefault();
-      return false;
-    }
-  });
+	$('form input').keydown(function(event){
+		if(event.keyCode == 13) {
+			event.preventDefault();
+			return false;
+		}
+	});
 });
+
+//Ease the copy-pasta, this textarea is used to programmatically set clipboard
+//content, see https://stackoverflow.com/a/30810322
+var textArea = document.getElementById("copyer");
+function copyTextToClipboard(text) {
+	textArea.style.display = "block";
+	textArea.value = text;
+	textArea.select();
+	try {
+		var successful = document.execCommand('copy');
+		if (successful){
+			//console.log('Copying text command was: ' + text);
+			snack("Copied to clipboard", 1000);
+		}else{
+			console.log('Oops, unable to copy');
+			snack("There was an error copying.",6000);
+		}
+	} catch (err) {
+		snack("There was an error copying " + err,6000);
+		console.log('Oops, unable to copy ' + err);
+	}
+	textArea.style.display = "none";
+}
+
+//Handle click to copy
+function listclick(event){
+	copyTextToClipboard(event.target.childNodes[0].data);
+	searchbar.value = "";
+	emptySearch();
+	searchbar.focus();
+	return false;
+}
+
+//Snackbar
+var snackbar = document.getElementById("snackbar");
+function snack(text,time){
+	snackbar.className = "show";
+	snackbar.innerText = text;
+	setTimeout( function(){
+		snackbar.className = snackbar.className.replace("show", "");
+	}, time);
+}
 
 var searchbar = document.getElementById("input-search");
 searchbar.focus()
@@ -40,7 +130,7 @@ var ws = new WebSocket("ws://localhost:42137/ws");
 var reslist = document.getElementById("result-list");
 function updateSearch(event){
 	var msg = { "search" : searchbar.value };
-	console.log(msg);
+	//console.log(msg);
 	ws.send(JSON.stringify(msg));
 };
 ws.onopen = function (event) {
@@ -49,10 +139,14 @@ ws.onopen = function (event) {
 	console.log("Enabled search")
 };
 ws.onmessage = function (event) {
-	console.log(event.data);
+	//console.log(event.data);
 	var msg = JSON.parse(event.data);
 	reslist.innerHTML = msg.Html;
 };
- </script>
-</body>
+
+function emptySearch(){
+	reslist.innerHTML = "";
+}
+		</script>
+	</body>
 </html>

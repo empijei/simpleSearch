@@ -5,12 +5,14 @@ import (
 	"bytes"
 	"io"
 	"strings"
+
+	"github.com/empijei/cli/lg"
 )
 
 var Paragraphs = &SlowSearcher{}
 
 type Paragraph struct {
-	Title, BodyEng, BodyIta string
+	Title, BodyEng, BodyIta, Activity, Classification, Score string
 }
 
 func LoadParagraph(r io.Reader) (p *Paragraph, err error) {
@@ -20,18 +22,35 @@ func LoadParagraph(r io.Reader) (p *Paragraph, err error) {
 	itabuf := bytes.NewBuffer(nil)
 	engbuf := bytes.NewBuffer(nil)
 	var isIta bool
+	isMeta := true
 	for s.Scan() {
 		line = s.Text()
 		if strings.HasPrefix(line, "# ") {
 			p.Title = line[2:]
 			continue
 		}
+		if isMeta {
+			switch {
+			case strings.HasPrefix(line, "Score:"):
+				p.Score = line[6:]
+			case strings.HasPrefix(line, "Activ:"):
+				p.Activity = line[6:]
+			case strings.HasPrefix(line, "OWASP:"):
+				p.Classification = line[6:]
+			default:
+				if len(line) > 0 && line[0] != byte('#') {
+					lg.Error("Unknown meta: " + line)
+				}
+			}
+		}
 		if strings.HasPrefix(line, "## E") {
 			isIta = false
+			isMeta = false
 			continue
 		}
 		if strings.HasPrefix(line, "## I") {
 			isIta = true
+			isMeta = false
 			continue
 		}
 		toAdd := line
@@ -50,5 +69,5 @@ func LoadParagraph(r io.Reader) (p *Paragraph, err error) {
 }
 
 func (p *Paragraph) GetAllText() string {
-	return p.Title + p.BodyIta + p.BodyEng
+	return p.Title + " " + p.BodyIta + " " + p.BodyEng + " " + p.Activity + " " + p.Classification + " " + p.Score
 }
