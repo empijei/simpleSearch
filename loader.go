@@ -46,7 +46,7 @@ func Load(path string, where ...Searcher) error {
 			w.Close()
 		}
 	}
-	lg.Infof("Indexes updated, %d files added in %d millisenconds", i, time.Now().Sub(t).Nanoseconds()/1000000)
+	lg.Infof("Indexes updated, %d files added in %d ms", i, time.Now().Sub(t).Nanoseconds()/1000000)
 	return nil
 }
 

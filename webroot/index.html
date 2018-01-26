@@ -7,63 +7,64 @@
 		<link rel="stylesheet" href="/libs/bootstrap.min.css">
 		<script src="/libs/jquery.min.js"></script>
 		<script src="/libs/bootstrap.min.js"></script>
+		<script src="/libs/clipboard.min.js"></script>
+		<!--Snackbar-->
+		<style>
+			#snackbar {
+				visibility: hidden;
+				min-width: 250px;
+				margin-left: -125px;
+				background-color: #333;
+				color: #fff;
+				text-align: center;
+				border-radius: 2px;
+				padding: 16px;
+				position: fixed;
+				z-index: 1;
+				left: 50%;
+				bottom: 30px;
+				font-size: 17px;
+			}
+
+			#snackbar.show {
+				visibility: visible;
+				-webkit-animation: fadein 0.5s;
+				animation: fadein 0.5s;
+			}
+
+			@-webkit-keyframes fadein {
+				from {bottom: 0; opacity: 0;} 
+				to {bottom: 30px; opacity: 1;}
+			}
+
+			@keyframes fadein {
+				from {bottom: 0; opacity: 0;}
+				to {bottom: 30px; opacity: 1;}
+			}
+
+			@-webkit-keyframes fadeout {
+				from {bottom: 30px; opacity: 1;} 
+				to {bottom: 0; opacity: 0;}
+			}
+
+			@keyframes fadeout {
+				from {bottom: 30px; opacity: 1;}
+				to {bottom: 0; opacity: 0;}
+			}
+		</style>
 	</head>
-	<!--Snackbar style-->
-	<style>
-		#snackbar {
-			visibility: hidden;
-			min-width: 250px;
-			margin-left: -125px;
-			background-color: #333;
-			color: #fff;
-			text-align: center;
-			border-radius: 2px;
-			padding: 16px;
-			position: fixed;
-			z-index: 1;
-			left: 50%;
-			bottom: 30px;
-			font-size: 17px;
-		}
-
-		#snackbar.show {
-			visibility: visible;
-			-webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-			animation: fadein 0.5s, fadeout 0.5s 2.5s;
-		}
-
-		@-webkit-keyframes fadein {
-			from {bottom: 0; opacity: 0;} 
-			to {bottom: 30px; opacity: 1;}
-		}
-
-		@keyframes fadein {
-			from {bottom: 0; opacity: 0;}
-			to {bottom: 30px; opacity: 1;}
-		}
-
-		@-webkit-keyframes fadeout {
-			from {bottom: 30px; opacity: 1;} 
-			to {bottom: 0; opacity: 0;}
-		}
-
-		@keyframes fadeout {
-			from {bottom: 30px; opacity: 1;}
-			to {bottom: 0; opacity: 0;}
-		}
-	</style>
-
 	<body>
-
 		<div class="container">
 			<form>
 				<div class="col-lg-12">
-					<div class="row">
-						<div class="input-group">
-							<input type="text" class="form-control" placeholder="Search for..." id="input-search">
-							<span class="input-group-btn">
-								<button class="btn btn-secondary" type="button" onclick="toggleLang()" id="langbtn">ENG</button>
-							</span>
+					<div class="form-group">
+						<div class="row">
+							<div class="input-group">
+								<input type="text" class="form-control" placeholder="Search for..." id="input-search">
+								<span class="input-group-btn">
+									<button class="btn btn-secondary" type="button" onclick="toggleLang()" id="langbtn">ENG</button>
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -71,91 +72,16 @@
 			<div class="list-group" id="result-list">
 			</div>
 		</div>
-
 		<div id="snackbar"></div>
 		<textarea id="copyer" style="display:none;"> </textarea>
-		<script>
-			/**/
-
-//Disable enter to submit and add to clipboard instead
-$(document).ready(function() {
-	$('form input').keydown(function(event){
-		if(event.keyCode == 13) {
-			var results = document.getElementsByClassName("list-group-item");
-			listclick({target:results[0].children[0]});
-			event.preventDefault();
-			return false;
-		}
-	});
-});
-
-//Ease the copy-pasta, this textarea is used to programmatically set clipboard
-//content, see https://stackoverflow.com/a/30810322
-var textArea = document.getElementById("copyer");
-function copyTextToClipboard(text) {
-	textArea.style.display = "block";
-	textArea.value = text;
-	textArea.select();
-	try {
-		var successful = document.execCommand('copy');
-		if (successful){
-			snack("Copied to clipboard", 1000);
-		}else{
-			snack("There was an error copying.",6000);
-		}
-	} catch (err) {
-		snack("There was an error copying " + err,6000);
-	}
-	textArea.style.display = "none";
-}
-
-//Handle click to copy
-function listclick(event){
-	var elm = event.target.parentElement.getElementsByClassName(ita?"ita":"eng");
-	copyTextToClipboard(elm[0].textContent);
-	searchbar.value = "";
-	emptySearch();
-	searchbar.focus();
-	return false;
-}
-
-//Langsiwtch
-var langbtn = document.getElementById("langbtn");
-var ita = false;
-function toggleLang(){
-	ita = !ita;
-	langbtn.innerText = ita?"ITA":"ENG";
-}
-
-//Snackbar
-var snackbar = document.getElementById("snackbar");
-function snack(text,time){
-	snackbar.className = "show";
-	snackbar.innerText = text;
-	setTimeout( function(){
-		snackbar.className = snackbar.className.replace("show", "");
-	}, time);
-}
-
-//Search logic
-var searchbar = document.getElementById("input-search");
-searchbar.focus()
-var ws = new WebSocket("ws://localhost:42137/ws");
-var reslist = document.getElementById("result-list");
-function updateSearch(event){
-	var msg = { "search" : searchbar.value };
-	ws.send(JSON.stringify(msg));
-};
-ws.onopen = function (event) {
-	console.log("Connected to backend")
-	searchbar.addEventListener("input", updateSearch);
-	console.log("Enabled search")
-};
-ws.onmessage = function (event) {
-	var msg = JSON.parse(event.data);
-	reslist.innerHTML = msg.Html;
-};
-function emptySearch(){ reslist.innerHTML = ""; }
-		</script>
+		<div id="copyerjs" style="display:block;">
+			<ul>
+				<li>Coffee</li>
+				<li>Tea</li>
+				<li>Milk</li>
+			</ul>	
+			<b> bold </b> <u> under </u> <i>italic</i>
+		</div>
+		<script src="/index.js"></script>
 	</body>
 </html>

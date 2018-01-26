@@ -39,7 +39,7 @@ func LoadParagraph(r io.Reader) (p *Paragraph, err error) {
 				p.Classification = line[6:]
 			default:
 				if len(line) > 0 && line[0] != byte('#') {
-					lg.Error("Unknown meta: " + line)
+					lg.Errorf("Unknown meta: <%s> in Paragraph <%s>", line, p.Title)
 				}
 			}
 			if !strings.HasPrefix(line, "## ") {
@@ -57,13 +57,12 @@ func LoadParagraph(r io.Reader) (p *Paragraph, err error) {
 			continue
 		}
 		toAdd := line
-		if len(line) == 0 {
-			toAdd += "\n"
-		}
 		if isIta {
 			itabuf.WriteString(toAdd)
+			itabuf.WriteRune('\n')
 		} else {
 			engbuf.WriteString(toAdd)
+			engbuf.WriteRune('\n')
 		}
 	}
 	p.BodyEng = string(engbuf.Bytes())
