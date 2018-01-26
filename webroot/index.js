@@ -1,7 +1,6 @@
 //Disable enter to submit and add to clipboard instead
 $(document).ready(function() {
 	$('form input').keydown(function(event){
-		//FIXME this does not prevent sending anymore
 		if(event.keyCode == 13) {
 			var results = document.getElementsByClassName("list-group-item");
 			listClick({target:results[0].children[0]});
@@ -30,15 +29,6 @@ function copyTextToClipboard(text) {
 	}
 	copyArea.style.display = "none";
 }
-
-var copyerjs = document.getElementById("copyerjs");
-new Clipboard('#input-search', {
-	text: function(trigger) {
-		console.log("Triggered");
-		return copyerjs;
-		//copyerjs.display="none";
-	}
-});
 
 //Handle click to copy
 function listClick(event){

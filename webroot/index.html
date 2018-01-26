@@ -7,7 +7,6 @@
 		<link rel="stylesheet" href="/libs/bootstrap.min.css">
 		<script src="/libs/jquery.min.js"></script>
 		<script src="/libs/bootstrap.min.js"></script>
-		<script src="/libs/clipboard.min.js"></script>
 		<!--Snackbar-->
 		<style>
 			#snackbar {
@@ -60,7 +59,7 @@
 					<div class="form-group">
 						<div class="row">
 							<div class="input-group">
-								<input type="text" class="form-control" placeholder="Search for..." id="input-search">
+								<input type="text" class="form-control" placeholder="Search for..." id="input-search" autocomplete="off">
 								<span class="input-group-btn">
 									<button class="btn btn-secondary" type="button" onclick="toggleLang()" id="langbtn">ENG</button>
 								</span>
@@ -74,14 +73,6 @@
 		</div>
 		<div id="snackbar"></div>
 		<textarea id="copyer" style="display:none;"> </textarea>
-		<div id="copyerjs" style="display:block;">
-			<ul>
-				<li>Coffee</li>
-				<li>Tea</li>
-				<li>Milk</li>
-			</ul>	
-			<b> bold </b> <u> under </u> <i>italic</i>
-		</div>
 		<script src="/index.js"></script>
 	</body>
 </html>
