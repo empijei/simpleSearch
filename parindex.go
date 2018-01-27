@@ -45,16 +45,24 @@ func sendWords(content, title string, c chan<- KeyValue) {
 	}
 	close(c)
 }
+*/
 
 type TitleSearcher struct {
-	index wordIndex
+	pars map[string][]*Paragraph
 }
 
-func (t *TitleSearcher) Search(needle string) (*Paragraph, error) {
-	panic("not implemented")
+func (t *TitleSearcher) Search(title string) ([]*Paragraph, error) {
+	p, ok := t.pars[title]
+	if !ok {
+		return nil, NotFoundError
+	}
+	return p, nil
 }
 
-func (t *TitleSearcher) Add(*Paragraph) {
-	panic("not implemented")
+func (t *TitleSearcher) Add(p *Paragraph) {
+	t.pars[p.Title] = append(t.pars[p.Title], p)
 }
-*/
+func (t *TitleSearcher) Open() {
+	t.pars = make(map[string][]*Paragraph)
+}
+func (t *TitleSearcher) Close() {}

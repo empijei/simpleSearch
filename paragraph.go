@@ -9,8 +9,6 @@ import (
 	"github.com/empijei/cli/lg"
 )
 
-var Paragraphs = &SlowSearcher{}
-
 type Paragraph struct {
 	Title, BodyEng, BodyIta, Activity, Classification, Score string
 }

@@ -3,7 +3,7 @@ $(document).ready(function() {
 	$('form input').keydown(function(event){
 		if(event.keyCode == 13) {
 			var results = document.getElementsByClassName("list-group-item");
-			listClick({target:results[0].children[0]});
+			listclick({target:results[0].children[0]});
 			event.preventDefault();
 			return false;
 		}
@@ -31,9 +31,10 @@ function copyTextToClipboard(text) {
 }
 
 //Handle click to copy
-function listClick(event){
+function listclick(event){
 	var elm = event.target.parentElement.getElementsByClassName(ita?"ita":"eng");
 	copyTextToClipboard(elm[0].textContent);
+	select(event.target.parentElement.getElementsByClassName("title")[0].textContent);
 	searchbar.value = "";
 	emptySearch();
 	searchbar.focus();
@@ -66,9 +67,13 @@ searchbar.focus()
 var ws = new WebSocket("ws://localhost:42137/ws");
 var reslist = document.getElementById("result-list");
 function updateSearch(event){
-	var msg = { "search" : searchbar.value };
+	var msg = { search : searchbar.value };
 	ws.send(JSON.stringify(msg));
 };
+function select(title){
+	var msg = { select : title };
+	ws.send(JSON.stringify(msg));
+}
 ws.onopen = function (event) {
 	console.log("Connected to backend")
 	searchbar.addEventListener("input", updateSearch);
@@ -76,7 +81,12 @@ ws.onopen = function (event) {
 };
 ws.onmessage = function (event) {
 	var msg = JSON.parse(event.data);
-	reslist.innerHTML = msg.Html;
+	if (msg.Html){
+		reslist.innerHTML = msg.Html;
+	}
+	if (msg.Result) {
+		snack(`Added result, total added: ${msg.Result}`,2000);
+	}
 };
 ws.onclose = function(event){
 	console.log("Server disconnected");

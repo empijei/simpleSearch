@@ -8,8 +8,10 @@ import (
 	"github.com/empijei/cli/lg"
 )
 
+//All of the following constants are just arbitrary
 const MaxResultSize = 10
 const MinSearchLength = 3
+const chanSize = 10
 
 type wordIndex struct {
 	index map[string]*ParSet
@@ -121,7 +123,7 @@ func (fs *FastSearcher) Open() {
 	fs.Lock()
 	defer fs.Unlock()
 	if fs.learn == nil {
-		fs.learn = make(chan *Paragraph)
+		fs.learn = make(chan *Paragraph, chanSize)
 		fs.done = make(chan struct{})
 	}
 	go func() {

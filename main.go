@@ -5,15 +5,20 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/empijei/cli/lg"
 )
 
 var FastIndex = &FastSearcher{}
+var SlowSearch = &SlowSearcher{}
+var TitleIndex = &TitleSearcher{}
+
+var selected []*Paragraph
 
 func main() {
-	err := Load("data", Paragraphs, FastIndex)
+	err := Load("data", SlowSearch, FastIndex, TitleIndex)
 	if err != nil {
 		log.Println(err)
 	}
@@ -22,7 +27,26 @@ func main() {
 	}
 	go View()
 	openBrowser("http://localhost:42137")
-	for m := range searchChannel {
+	go searchJob()
+	addSelected()
+}
+
+func addSelected() {
+	for m := range selectChan {
+		res, err := TitleIndex.Search(m)
+		if err != nil {
+			lg.Error(err, m)
+			continue
+		}
+		selected = append(selected, res...)
+		lg.Debugf("Added paragraph \"%s\", total selected: %d", res[0].Title, len(selected))
+		resultChan <- map[string]string{"Result": strconv.Itoa(len(selected))}
+
+	}
+}
+
+func searchJob() {
+	for m := range searchChan {
 		lg.Debug(m)
 		t := time.Now()
 		//p, err := Paragraphs.Search(m)
@@ -31,7 +55,7 @@ func main() {
 			continue
 		}
 		lg.Infof("Lookup time: %d µs", time.Now().Sub(t).Nanoseconds()/1000)
-		resultChannel <- p
+		resultChan <- p
 	}
 }
 
